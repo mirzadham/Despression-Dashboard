@@ -39,9 +39,16 @@ def show(df):
         
         st.subheader("Tech Company Distribution")
         tech_counts = df['tech_company'].value_counts()
+        
+        # FIX: Convert values to strings and ensure consistent data types
+        tech_counts.index = tech_counts.index.astype(str)
+        tech_counts_values = tech_counts.values.astype(float)
+        
         fig, ax = plt.subplots(figsize=(8, 5))
-        ax.bar(tech_counts.index, tech_counts.values, color=['#1f77b4', '#ff7f0e'])
+        
+        # Use barh for horizontal bar plot to avoid category issues
+        ax.barh(tech_counts.index, tech_counts_values, color=['#1f77b4', '#ff7f0e'])
         ax.set_title('Tech Company Employment')
-        ax.set_xlabel('Works in Tech Company')
-        ax.set_ylabel('Count')
+        ax.set_xlabel('Count')
+        ax.set_ylabel('Works in Tech Company')
         st.pyplot(fig)
