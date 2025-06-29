@@ -1,8 +1,6 @@
-# employee_profiling.py
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
-import seaborn as sns
+import plotly.express as px
 from sklearn.cluster import KMeans
 
 @st.cache_data
@@ -21,7 +19,7 @@ def perform_clustering(df):
     return df_cluster_data
 
 def show(df):
-    st.header("👥 Employee Profiling")
+    st.header("👥 Employee Segments")
     st.write("Clustering analysis to identify distinct employee segments based on mental health attitudes and behaviors.")
     
     # Perform clustering
@@ -77,14 +75,12 @@ def show(df):
     
     melted = cluster_chars.melt(id_vars='cluster', var_name='feature', value_name='percentage')
     
-    fig, ax = plt.subplots(figsize=(12, 8))
-    sns.barplot(x='feature', y='percentage', hue='cluster', data=melted, palette=colors, ax=ax)
-    ax.set_title('Mental Health Resource Awareness by Cluster')
-    ax.set_xlabel('Resource Feature')
-    ax.set_ylabel('Percentage Responded "Yes"')
-    ax.legend(title='Cluster', labels=['Engaged & Supported', 'At-Risk & Unsupported', 'Proactive & Vulnerable'])
-    plt.xticks(rotation=45)
-    st.pyplot(fig)
+    fig = px.bar(melted, x='feature', y='percentage', color='cluster', 
+                barmode='group', title='<b>Mental Health Resource Awareness by Cluster</b>',
+                labels={'feature': 'Resource Feature', 'percentage': 'Percentage Responded "Yes"'},
+                color_discrete_sequence=colors)
+    fig.update_layout(xaxis_tickangle=-45)
+    st.plotly_chart(fig, use_container_width=True)
     
     st.subheader("Recommendations by Cluster")
     st.markdown("""
