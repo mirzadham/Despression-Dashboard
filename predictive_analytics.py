@@ -1,12 +1,10 @@
-# predictive_analytics.py
 import streamlit as st
 import pandas as pd
 import numpy as np
+import plotly.express as px
 from sklearn.model_selection import train_test_split
 from sklearn.preprocessing import LabelEncoder, StandardScaler
-from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
-from xgboost import XGBClassifier
 from sklearn.metrics import accuracy_score
 
 @st.cache_data
@@ -51,11 +49,9 @@ def prepare_prediction_data(df):
 
 @st.cache_resource
 def train_models(X1_train, y1_train, X2_train, y2_train):
-    # Models for treatment prediction
     rf_treatment = RandomForestClassifier(n_estimators=100, random_state=42)
     rf_treatment.fit(X1_train, y1_train)
     
-    # Models for work interference prediction
     rf_interfere = RandomForestClassifier(n_estimators=100, random_state=42)
     rf_interfere.fit(X2_train, y2_train)
     
@@ -65,50 +61,26 @@ def train_models(X1_train, y1_train, X2_train, y2_train):
     }
 
 def predict_treatment(model, input_data, feature_columns, scaler):
-    """Predict treatment outcome based on user input"""
-    # Create a DataFrame from input data
     input_df = pd.DataFrame([input_data])
-    
-    # One-hot encode the input
     input_encoded = pd.get_dummies(input_df, drop_first=True)
-    
-    # Align columns with training data
     input_encoded = input_encoded.reindex(columns=feature_columns, fill_value=0)
-    
-    # Scale the input
     input_scaled = scaler.transform(input_encoded)
-    
-    # Make prediction
     prediction = model.predict(input_scaled)[0]
     probability = model.predict_proba(input_scaled)[0]
-    
     return prediction, probability
 
 def predict_work_interference(model, input_data, feature_columns, scaler, target_names):
-    """Predict work interference level based on user input"""
-    # Create a DataFrame from input data
     input_df = pd.DataFrame([input_data])
-    
-    # One-hot encode the input
     input_encoded = pd.get_dummies(input_df, drop_first=True)
-    
-    # Align columns with training data
     input_encoded = input_encoded.reindex(columns=feature_columns, fill_value=0)
-    
-    # Scale the input
     input_scaled = scaler.transform(input_encoded)
-    
-    # Make prediction
     prediction = model.predict(input_scaled)[0]
     probability = model.predict_proba(input_scaled)[0]
-    
-    # Map prediction to class name
     prediction_label = target_names[prediction]
-    
     return prediction_label, probability
 
 def show(df):
-    st.header("🤖 Mental Health Risk Assessment")
+    st.header("🔮 Predictive Insights")
     st.markdown("""
     **Predict mental health outcomes** based on employee characteristics and workplace factors.
     Use the input panels below to simulate different scenarios and see predicted outcomes.
@@ -188,15 +160,13 @@ def show(df):
             features = feature_columns
             feature_imp = pd.DataFrame({'Feature': features, 'Importance': importances})
             feature_imp = feature_imp.sort_values('Importance', ascending=False).head(5)
-            
-            # Simplify feature names for display
             feature_imp['Feature'] = feature_imp['Feature'].str.replace('_', ' ').str.title()
+            fig = px.bar(feature_imp, y='Feature', x='Importance', orientation='h',
+                        title='<b>Top Influencing Factors</b>',
+                        color_discrete_sequence=['#1a5a9e'])
+            st.plotly_chart(fig, use_container_width=True)
             
-            # Display as horizontal bar chart
-            st.bar_chart(feature_imp.set_index('Feature'))
-            
-            st.caption("Based on current model accuracy: "
-                      f"{accuracy_score(y1_test, model.predict(X1_test))*100:.1f}%")
+            st.caption(f"Model accuracy: {accuracy_score(y1_test, model.predict(X1_test))*100:.1f}%")
     
     with tab2:
         st.subheader("Predict Work Interference from Mental Health")
@@ -251,15 +221,14 @@ def show(df):
             
             st.subheader("Prediction Result")
             
-            # Create a visual indicator for interference level
             interference_levels = {
-                "Never": ("😊", "success", "Mental health rarely affects work performance"),
-                "Rarely": ("😐", "info", "Occasional minor impact on work"),
-                "Sometimes": ("😟", "warning", "Noticeable impact on work performance"),
-                "Often": ("😞", "error", "Frequent significant impact on work")
+                "Never": ("😊", "Mental health rarely affects work performance"),
+                "Rarely": ("😐", "Occasional minor impact on work"),
+                "Sometimes": ("😟", "Noticeable impact on work performance"),
+                "Often": ("😞", "Frequent significant impact on work")
             }
             
-            emoji, color, description = interference_levels.get(prediction, ("❓", "secondary", "Unknown"))
+            emoji, description = interference_levels.get(prediction, ("❓", "Unknown impact level"))
             
             st.markdown(f"""
             <div style="text-align: center; padding: 20px; border-radius: 10px; background-color: #f0f2f6;">
@@ -275,7 +244,11 @@ def show(df):
                 "Interference Level": target_names_task2,
                 "Probability": probability * 100
             })
-            st.bar_chart(prob_df.set_index("Interference Level"))
+            fig = px.bar(prob_df, x='Probability', y='Interference Level', orientation='h',
+                        title='<b>Prediction Probability Distribution</b>',
+                        color='Interference Level',
+                        color_discrete_sequence=px.colors.sequential.Blues)
+            st.plotly_chart(fig, use_container_width=True)
             
             # Show key factors
             st.subheader("Key Influencing Factors")
@@ -284,78 +257,10 @@ def show(df):
             features = feature_columns
             feature_imp = pd.DataFrame({'Feature': features, 'Importance': importances})
             feature_imp = feature_imp.sort_values('Importance', ascending=False).head(5)
-            
-            # Simplify feature names for display
             feature_imp['Feature'] = feature_imp['Feature'].str.replace('_', ' ').str.title()
+            fig = px.bar(feature_imp, y='Feature', x='Importance', orientation='h',
+                        title='<b>Top Influencing Factors</b>',
+                        color_discrete_sequence=['#1a5a9e'])
+            st.plotly_chart(fig, use_container_width=True)
             
-            # Display as horizontal bar chart
-            st.bar_chart(feature_imp.set_index('Feature'))
-            
-            st.caption("Based on current model accuracy: "
-                      f"{accuracy_score(y2_test, model.predict(X2_test))*100:.1f}%")
-            # predictive_analytics.py (add to end of show() function)
-def show(df):
-    # ... existing prediction code ...
-    
-    # ADD ACTIONABLE RECOMMENDATIONS SECTION
-    st.markdown("---")
-    st.subheader("💡 Actionable Recommendations")
-    
-    if 'prediction' in locals():  # If prediction has been made
-        if prediction == 1:  # Likely to seek treatment
-            with st.container():
-                st.success("**Recommended Intervention**: Proactive Support Program")
-                cols = st.columns(3)
-                cols[0].metric("Expected Impact", "37%", "reduction in severe cases")
-                cols[1].metric("ROI Estimate", "4.2x", "return on investment")
-                cols[2].metric("Implementation", "4 weeks", "time to deploy")
-                
-                st.markdown("""
-                **Implementation Steps:**
-                1. Schedule confidential consultation within 3 days
-                2. Provide access to digital therapy platform
-                3. Assign mental health advocate
-                4. Monthly check-ins for 6 months
-                """)
-                st.progress(0.15, text="Current adoption: 15%")
-                
-        else:  # Unlikely to seek treatment
-            with st.container():
-                st.warning("**Recommended Intervention**: Awareness & Stigma Reduction")
-                cols = st.columns(3)
-                cols[0].metric("Expected Impact", "28%", "increase in help-seeking")
-                cols[1].metric("ROI Estimate", "3.1x", "return on investment")
-                cols[2].metric("Implementation", "3 weeks", "time to deploy")
-                
-                st.markdown("""
-                **Implementation Steps:**
-                1. Leadership mental health storytelling session
-                2. Anonymous experience sharing platform
-                3. "Mental Health 101" workshops
-                4. Bimonthly awareness newsletter
-                """)
-                st.progress(0.35, text="Current adoption: 35%")
-    
-    # ADD PREDICTIVE INSIGHTS PANEL
-    st.markdown("---")
-    st.subheader("🚀 Predictive Insights Engine")
-    
-    col1, col2 = st.columns([1, 2])
-    with col1:
-        metric = st.selectbox("Forecast Metric", 
-                            ["Treatment Likelihood", "Work Interference", "Benefits Utilization"])
-        horizon = st.slider("Forecast Horizon (months)", 1, 12, 6)
-        st.button("Generate Strategic Forecast", type="primary")
-        
-    with col2:
-        # Placeholder for forecast visualization
-        st.image("https://via.placeholder.com/600x300/1a5a9e/ffffff?text=Advanced+Forecast+Visualization", 
-                 use_column_width=True)
-        st.caption("Forecast shows 23% increase in treatment seeking over next 6 months")
-        
-        st.markdown("""
-        **Key Insights:**
-        - Engineering teams will see highest increase (+32%)
-        - Remote employees projected to have 18% lower utilization
-        - Manager training could boost rates by 12-15%
-        """)
+            st.caption(f"Model accuracy: {accuracy_score(y2_test, model.predict(X2_test))*100:.1f}%")
