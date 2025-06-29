@@ -23,8 +23,8 @@ st.write("Navigate through the sections below to explore descriptive statistics,
 @st.cache_data
 def load_data():
     try:
-        df_2014 = pd.read_csv('/content/2014.csv')
-        df_2016 = pd.read_csv('/content/2016.csv')
+        df_2014 = pd.read_csv('2014.csv')
+        df_2016 = pd.read_csv('2016.csv')
         return df_2014, df_2016
     except FileNotFoundError:
         st.error("ERROR: Make sure you have uploaded both '2014.csv' and '2016.csv'")
