@@ -1,4 +1,140 @@
-# predictive_analytics.py
+# predictive_analytics.py (revised)
+import streamlit as st
+import pandas as pd
+import numpy as np
+from sklearn.preprocessing import StandardScaler, LabelEncoder
+
+# ... (keep prepare_prediction_data and train_models functions) ...
+
+def get_user_input(features, df, key_suffix=""):
+    user_input = {}
+    with st.form(f"input_form_{key_suffix}"):
+        col1, col2 = st.columns(2)
+        with col1:
+            user_input['age'] = st.slider("Age", 18, 100, 30, key=f"age_{key_suffix}")
+            user_input['gender'] = st.selectbox("Gender", df['gender'].unique(), key=f"gender_{key_suffix}")
+            user_input['family_history'] = st.selectbox("Family History of Mental Illness", 
+                                                      df['family_history'].unique(), key=f"fam_{key_suffix}")
+            user_input['benefits'] = st.selectbox("Employer Provides Mental Health Benefits", 
+                                                df['benefits'].unique(), key=f"benefits_{key_suffix}")
+        with col2:
+            user_input['care_options'] = st.selectbox("Knowledge of Care Options", 
+                                                    df['care_options'].unique(), key=f"care_{key_suffix}")
+            user_input['leave'] = st.selectbox("Ease of Taking Medical Leave", 
+                                             df['leave'].unique(), key=f"leave_{key_suffix}")
+            user_input['mental_health_consequence'] = st.selectbox("Fear of Negative Consequences", 
+                                                                 df['mental_health_consequence'].unique(), 
+                                                                 key=f"conseq_{key_suffix}")
+            user_input['no_employees'] = st.selectbox("Company Size", 
+                                                    sorted(df['no_employees'].unique()), 
+                                                    key=f"employees_{key_suffix}")
+            user_input['tech_company'] = st.selectbox("Works in Tech", 
+                                                    df['tech_company'].unique(), key=f"tech_{key_suffix}")
+        
+        submitted = st.form_submit_button("Predict")
+    return user_input, submitted
+
+def preprocess_input(user_input, encoded_columns, scaler):
+    input_df = pd.DataFrame([user_input])
+    input_encoded = pd.get_dummies(input_df, drop_first=True)
+    # Ensure same columns as training data
+    input_encoded = input_encoded.reindex(columns=encoded_columns, fill_value=0)
+    return scaler.transform(input_encoded)
+
+def show(df):
+    st.header("🔮 Mental Health Prediction Tool")
+    st.caption("Enter your information to predict mental health outcomes")
+    
+    # Prepare data and models
+    (X1_train, X1_test, y1_train, y1_test, 
+     X2_train, X2_test, y2_train, y2_test, 
+     le_interference, scaler1, scaler2, encoded_columns) = prepare_prediction_data(df)
+    
+    models = train_models(X1_train, y1_train, X2_train, y2_train)
+    
+    tab1, tab2 = st.tabs(["Treatment Prediction", "Work Interference Prediction"])
+    
+    with tab1:
+        st.subheader("Will you seek mental health treatment?")
+        model_choice = st.radio("Select Prediction Model", 
+                               ["Logistic Regression", "Random Forest", "XGBoost"],
+                               horizontal=True)
+        
+        user_input, submitted = get_user_input(encoded_columns, df, "treatment")
+        
+        if submitted:
+            # Preprocess input
+            input_scaled = preprocess_input(user_input, encoded_columns, scaler1)
+            
+            # Get model and predict
+            model = models["treatment"][model_choice]
+            proba = model.predict_proba(input_scaled)[0]
+            prediction = model.predict(input_scaled)[0]
+            
+            # Display results
+            st.divider()
+            col1, col2 = st.columns([1, 2])
+            with col1:
+                st.metric("Prediction", 
+                         "Likely to seek treatment" if prediction == 1 else "Unlikely to seek treatment",
+                         f"{proba[1]*100:.1f}%" if prediction == 1 else f"{proba[0]*100:.1f}%")
+                
+                # Visual probability gauge
+                prob_value = proba[1] if prediction == 1 else proba[0]
+                st.progress(int(prob_value * 100), 
+                           text=f"Confidence: {prob_value*100:.1f}%")
+            
+            with col2:
+                # Explain top influencing factors
+                if model_choice == "Random Forest":
+                    importances = model.feature_importances_
+                    features = encoded_columns.tolist()
+                    top_idx = np.argsort(importances)[-3:][::-1]
+                    
+                    st.write("**Key factors in this prediction:**")
+                    for i, idx in enumerate(top_idx):
+                        feature_name = features[idx].split("_")[-1]
+                        st.markdown(f"{i+1}. {feature_name} ({(importances[idx]*100):.1f}%)")
+                else:
+                    st.info("Top factors available with Random Forest model")
+    
+    with tab2:
+        st.subheader("How will mental health affect your work?")
+        model_choice = st.radio("Select Prediction Model", 
+                               ["Logistic Regression", "Random Forest", "XGBoost"],
+                               horizontal=True, key="model_interfere")
+        
+        user_input, submitted = get_user_input(encoded_columns, df, "interfere")
+        
+        if submitted:
+            # Preprocess input
+            input_scaled = preprocess_input(user_input, encoded_columns, scaler2)
+            
+            # Get model and predict
+            model = models["interfere"][model_choice]
+            proba = model.predict_proba(input_scaled)[0]
+            prediction = le_interference.inverse_transform(model.predict(input_scaled))[0]
+            
+            # Display results
+            st.divider()
+            st.subheader(f"Predicted Impact: **{prediction}**")
+            
+            # Probability distribution
+            st.write("**Probability distribution:**")
+            classes = le_interference.classes_
+            for cls, p in zip(classes, proba):
+                st.markdown(f"- {cls}: `{p*100:.1f}%`")
+                st.progress(int(p * 100))
+            
+            # Business impact interpretation
+            st.write("**What this means for your work:**")
+            impact_info = {
+                "Never": "Minimal productivity impact",
+                "Rarely": "Occasional focus challenges",
+                "Sometimes": "Noticeable productivity fluctuations",
+                "Often": "Significant work performance impact"
+            }
+            st.info(impact_info.get(prediction, "Consult HR about workplace accommodations"))# predictive_analytics.py
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
