@@ -108,7 +108,7 @@ def predict_work_interference(model, input_data, feature_columns, scaler, target
     return prediction_label, probability
 
 def show(df):
-    st.header("🤖 Predictive Analytics")
+    st.header("🤖 Mental Health Risk Assessment")
     st.markdown("""
     **Predict mental health outcomes** based on employee characteristics and workplace factors.
     Use the input panels below to simulate different scenarios and see predicted outcomes.
