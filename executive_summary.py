@@ -1,19 +1,19 @@
-# executive_summary.py
 import streamlit as st
+import pandas as pd
 import plotly.express as px
 
 def show(df):
     st.header("📊 Executive Dashboard")
-    
-    # KPI Cards Row
-    st.subheader("Key Performance Indicators")
-    kpi1, kpi2, kpi3, kpi4 = st.columns(4)
     
     # Calculate KPIs
     treatment_rate = df['treatment'].mean() * 100
     work_interfere_high = df[df['work_interfere'].isin(['Often', 'Sometimes'])].shape[0] / len(df) * 100
     benefits_awareness = df[df['benefits'] == 'Yes'].shape[0] / len(df) * 100
     manager_comfort = df[df['supervisor'] == 'Yes'].shape[0] / len(df) * 100
+    
+    # KPI Cards Row
+    st.subheader("Key Performance Indicators")
+    kpi1, kpi2, kpi3, kpi4 = st.columns(4)
     
     kpi1.metric("Treatment Rate", f"{treatment_rate:.1f}%", "+8% YoY", 
                 help="Percentage seeking mental health treatment")
