@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 def show(df):
-    st.header("🔍 Mental Wellness Correlation")
+    st.header("🔍 Mental Wellness Correlations")
     
     tab1, tab2 = st.tabs(["Treatment Analysis", "Work Interference"])
     
