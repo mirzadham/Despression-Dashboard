@@ -118,6 +118,16 @@ def setup_page():
     color: white;
     border: 1px solid #1f77b4; /* Matches header color */
 }
+.stMetric h3 {
+    font-weight: 700;
+    font-size: 1.8rem;
+    margin-bottom: 0.25rem;
+}
+
+.stMetric label {
+    opacity: 0.9;
+    font-size: 0.9rem;
+}
         .stDataFrame {
             border-radius: 0.5rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
