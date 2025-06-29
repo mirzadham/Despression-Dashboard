@@ -1,10 +1,9 @@
-# data_overview.py
 import streamlit as st
 import pandas as pd
-import matplotlib.pyplot as plt
+import plotly.express as px
 
 def show(df):
-    st.header("📊 Dataset Overview")
+    st.header("🔍 Data Overview")
     st.write("This dashboard analyzes mental health attitudes in tech workplaces using survey data from 2014 and 2016.")
     
     col1, col2 = st.columns([1, 2])
@@ -32,9 +31,10 @@ def show(df):
         st.dataframe(missing_df.style.background_gradient(cmap="Reds"))
         
         st.subheader("Treatment Distribution")
-        treatment_counts = df['treatment'].value_counts()
-        fig, ax = plt.subplots(figsize=(6, 3))
-        ax.pie(treatment_counts, labels=['No Treatment', 'Sought Treatment'], 
-               autopct='%1.1f%%', colors=['#ff7f0e', '#1f77b4'], startangle=90)
-        ax.axis('equal')
-        st.pyplot(fig)
+        treatment_counts = df['treatment'].value_counts().reset_index()
+        fig = px.pie(treatment_counts, values='count', names='treatment',
+                    title='<b>Treatment Distribution</b>',
+                    color_discrete_sequence=['#ff7f0e', '#1f77b4'],
+                    labels={'treatment': 'Treatment Status', 'count': 'Count'})
+        fig.update_traces(textposition='inside', textinfo='percent+label')
+        st.plotly_chart(fig, use_container_width=True)
