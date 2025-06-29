@@ -93,48 +93,95 @@ def clean_and_merge_data(df_2014, df_2016):
 
     return df_merged
 
+# utils.py (update CSS section)
 def setup_page():
     st.set_page_config(layout="wide", page_title="Mental Health in Tech Dashboard", page_icon="🧠")
     st.markdown("""
     <style>
+        /* Updated CSS with professional enhancements */
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700&display=swap');
+        
+        html, body, [class*="css"] {
+            font-family: 'Inter', sans-serif;
+        }
+        
         .reportview-container .main .block-container {
             padding-top: 1.5rem;
             padding-bottom: 2rem;
         }
+        
         .sidebar .sidebar-content {
-            background-color: #f8f9fa;
+            background: rgba(255, 255, 255, 0.85) !important;
+            backdrop-filter: blur(12px);
+            border-right: 1px solid rgba(0,0,0,0.05);
             padding: 1.5rem 1rem;
         }
-        h1, h2, h3 {
+        
+        h1 {
+            font-weight: 700 !important;
+            font-size: 2.5rem !important;
+            letter-spacing: -0.5px;
+            border-bottom: none !important;
+        }
+        
+        h2, h3 {
+            font-weight: 600 !important;
             color: #1f77b4;
-            border-bottom: 1px solid #e0e0e0;
             padding-bottom: 0.3rem;
+            border-bottom: 2px solid #1f77b4 !important;
         }
+        
         .stMetric {
-            background-color: #0d3c75; /* Slightly darker navy */
-            border-radius: 0.5rem;
-            padding: 1rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            background: linear-gradient(145deg, #0d3c75, #1a5a9e);
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 6px 16px rgba(0,0,0,0.2);
             color: white;
-            border: 1px solid #1f77b4; /* Matches header color */
+            border: 1px solid rgba(255,255,255,0.1);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
         }
+        
+        .stMetric:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 24px rgba(0,0,0,0.25);
+        }
+        
+        .stMetric label {
+            opacity: 0.9;
+            font-size: 0.9rem;
+        }
+        
         .stMetric h3 {
             font-weight: 700;
             font-size: 1.8rem;
             margin-bottom: 0.25rem;
         }
-        .stMetric label {
-            opacity: 0.9;
-            font-size: 0.9rem;
+        
+        .stDataFrame, .element-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            padding: 1.5rem;
+            border: 1px solid rgba(0,0,0,0.03);
         }
-        .stDataFrame {
-            border-radius: 0.5rem;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
+        
         .stButton>button {
-            background-color: #1f77b4;
+            background-color: #1a5a9e;
             color: white;
-            border-radius: 0.5rem;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            transition: all 0.3s ease;
+        }
+        
+        .stButton>button:hover {
+            background-color: #0d3c75;
+            transform: scale(1.05);
+        }
+        
+        .stSelectbox, .stSlider, .stRadio {
+            background: white;
+            border-radius: 8px;
+            padding: 0.5rem;
         }
     </style>
     """, unsafe_allow_html=True)
