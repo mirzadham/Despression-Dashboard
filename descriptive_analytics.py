@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 
 def show(df):
-    st.header("📈 Descriptive Analytics")
+    st.header("📈 Employee Demographics Overview")
     
     col1, col2 = st.columns(2)
     with col1:
