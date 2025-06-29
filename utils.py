@@ -111,7 +111,7 @@ def setup_page():
             padding-bottom: 0.3rem;
         }
         .stMetric {
-            background-color: #f0f2f6;
+            background-color: #000000;
             border-radius: 0.5rem;
             padding: 1rem;
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
