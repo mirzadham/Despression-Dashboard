@@ -18,9 +18,9 @@ df = clean_and_merge_data(df_2014, df_2016)
 st.sidebar.title("Mental Health Dashboard")
 sections = {
     "📊 Data Overview": show_data_overview,
-    "📈 Descriptive Analytics": show_descriptive,
-    "🔍 Diagnostic Analytics": show_diagnostic,
-    "🤖 Predictive Analytics": show_predictive,
+    "📈 Employee Demographics Overview": show_descriptive,
+    "🔍 Mental Wellness Correlations": show_diagnostic,
+    "🤖 Mental Health Risk Assessment": show_predictive,
     "👥 Employee Profiling": show_profiling
 }
 selected = st.sidebar.radio("Navigate to:", list(sections.keys()))
@@ -37,9 +37,8 @@ st.sidebar.info(f"""
 
 st.sidebar.markdown("---")
 st.sidebar.caption("""
-Created by [Your Name]  
+Created by [Group 3]  
 [GitHub Repository](https://github.com/your-repo)  
-[Contact Me](mailto:you@example.com)  
 """)
 
 # Main content area
