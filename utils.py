@@ -111,11 +111,12 @@ def setup_page():
             padding-bottom: 0.3rem;
         }
         .stMetric {
-    background-color: #1a5a9e;  /* Rich navy blue */
+    background-color: #0d3c75; /* Slightly darker navy */
     border-radius: 0.5rem;
     padding: 1rem;
     box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    color: white; /* Ensures text remains white */
+    color: white;
+    border: 1px solid #1f77b4; /* Matches header color */
 }
         .stDataFrame {
             border-radius: 0.5rem;
