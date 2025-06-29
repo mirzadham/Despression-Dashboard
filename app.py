@@ -32,12 +32,11 @@ st.sidebar.info(f"""
 - **Records**: {len(df)} employees  
 - **Years**: 2014 & 2016  
 - **Variables**: 16  
-- **Last Updated**: 2023-10-15  
 """)
 
 st.sidebar.markdown("---")
 st.sidebar.caption("""
-Created by [Group 3]  
+Created by [Group 4]  
 [GitHub Repository](https://github.com/mirzadham/Despression-Dashboard/tree/main)  
 """)
 
