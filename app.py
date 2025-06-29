@@ -38,7 +38,7 @@ st.sidebar.info(f"""
 st.sidebar.markdown("---")
 st.sidebar.caption("""
 Created by [Group 3]  
-[GitHub Repository](https://github.com/your-repo)  
+[GitHub Repository](https://github.com/mirzadham/Despression-Dashboard/tree/main)  
 """)
 
 # Main content area
