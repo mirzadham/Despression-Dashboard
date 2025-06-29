@@ -1,4 +1,3 @@
-# app.py (updated)
 import streamlit as st
 from utils import setup_page, load_data, clean_and_merge_data
 from data_overview import show as show_data_overview
@@ -6,7 +5,7 @@ from descriptive_analytics import show as show_descriptive
 from diagnostic_analytics import show as show_diagnostic
 from predictive_analytics import show as show_predictive
 from employee_profiling import show as show_profiling
-from executive_summary import show as show_executive_summary  # New
+from executive_summary import show as show_executive_summary
 
 # Initialize page
 setup_page()
@@ -15,10 +14,10 @@ setup_page()
 df_2014, df_2016 = load_data()
 df = clean_and_merge_data(df_2014, df_2016)
 
-# Sidebar navigation - ADD NEW SECTION
+# Sidebar navigation
 st.sidebar.title("Mental Health Dashboard")
 sections = {
-    "📊 Executive Summary": show_executive_summary,  # New first section
+    "📊 Executive Summary": show_executive_summary,
     "🔍 Data Overview": show_data_overview,
     "📈 Workforce Analytics": show_descriptive,
     "📉 Impact Analysis": show_diagnostic,
@@ -27,7 +26,7 @@ sections = {
 }
 selected = st.sidebar.radio("Navigate to:", list(sections.keys()))
 
-# Add smart filters in sidebar
+# Smart filters
 st.sidebar.markdown("---")
 st.sidebar.subheader("Smart Filters")
 
@@ -68,9 +67,16 @@ st.sidebar.info(f"""
 - **Applied Filters**: {len(gender_filter)} gender, {len(company_size)} company sizes
 """)
 
+st.sidebar.markdown("---")
+st.sidebar.caption("""
+Created by [Your Name]  
+[GitHub Repository](https://github.com/your-repo)  
+[Contact Me](mailto:you@example.com)  
+""")
+
 # Main content area
 st.title("🧠 Mental Health in Tech Workplace Analysis")
-sections[selected](df_filtered)  # Pass filtered data to sections
+sections[selected](df_filtered)
 
 # Footer
 st.markdown("---")
