@@ -30,7 +30,7 @@ def show(df):
     
     st.subheader("Cluster Distribution")
     col1, col2, col3 = st.columns(3)
-    colors = ['#000000', '#ff7f0e', '#2ca02c']
+    colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
     
     with col1:
         st.metric("Cluster 0: Engaged & Supported", f"{cluster_counts[0]} employees", 
