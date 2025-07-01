@@ -242,8 +242,9 @@ def show(df):
             st.subheader("Probability Distribution")
             prob_df = pd.DataFrame({
                 "Interference Level": target_names_task2,
-                "Probability": [f"{p*100:.2f}%" for p in probability]
+                "Probability": probability * 100
             })
+            prob_df["Probability (%)"] = prob_df["Probability"].map(lambda x: f"{x:.2f}%")
             fig = px.bar(prob_df, x='Probability', y='Interference Level', orientation='h',
                         title='<b>Prediction Probability Distribution</b>',
                         color='Interference Level',
