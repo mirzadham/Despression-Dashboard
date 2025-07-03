@@ -1,6 +1,7 @@
 import streamlit as st
 import pandas as pd
 import plotly.express as px
+import numpy as np
 from sklearn.cluster import KMeans
 
 @st.cache_data
@@ -25,91 +26,117 @@ def show(df):
     # Perform clustering
     df_cluster = perform_clustering(df)
     
-    # Reassign clusters based on size
-    cluster_counts = df_cluster['cluster'].value_counts()
-    sorted_counts = cluster_counts.sort_values(ascending=False)
-    cluster_map = {
-        sorted_counts.index[0]: 0,  # Largest cluster -> Cautious/Uninformed
-        sorted_counts.index[1]: 1,  # Middle cluster -> Supported
-        sorted_counts.index[2]: 2   # Smallest cluster -> Stigmatized
-    }
-    df_cluster['cluster'] = df_cluster['cluster'].map(cluster_map)
-    cluster_counts = df_cluster['cluster'].value_counts().sort_index()
+    # Calculate characteristics for each cluster
+    cluster_stats = []
+    for c in range(3):
+        cluster_data = df_cluster[df_cluster['cluster'] == c]
+        stats = {
+            'cluster': c,
+            'dk_benefits': (cluster_data['benefits'] == "Don't know").mean(),
+            'dk_care_options': (cluster_data['care_options'] == "Don't know").mean(),
+            'yes_benefits': (cluster_data['benefits'] == 'Yes').mean(),
+            'yes_wellness': (cluster_data['wellness_program'] == 'Yes').mean(),
+            'yes_supervisor': (cluster_data['supervisor'] == 'Yes').mean(),
+            'yes_consequence': (cluster_data['mental_health_consequence'] == 'Yes').mean(),
+            'no_coworkers': (cluster_data['coworkers'] == 'No').mean(),
+            'size': len(cluster_data)
+        }
+        cluster_stats.append(stats)
     
-    # Create cluster names
-    cluster_names = {
-        0: "The Cautious / Uninformed",
-        1: "The Supported",
-        2: "The Stigmatized"
-    }
-    df_cluster['cluster_name'] = df_cluster['cluster'].map(cluster_names)
-
+    # Create cluster mapping based on characteristics
+    cluster_map = {}
+    for stats in cluster_stats:
+        if stats['dk_benefits'] > 0.4 and stats['dk_care_options'] > 0.4:
+            cluster_map[stats['cluster']] = ("The Cautious / Uninformed", stats['size'], "#1f77b4")
+        elif stats['yes_benefits'] > 0.7 and stats['yes_wellness'] > 0.7 and stats['yes_supervisor'] > 0.7:
+            cluster_map[stats['cluster']] = ("The Supported", stats['size'], "#2ca02c")
+        elif stats['yes_consequence'] > 0.5 and stats['no_coworkers'] > 0.4:
+            cluster_map[stats['cluster']] = ("The Stigmatized", stats['size'], "#ff7f0e")
+        else:
+            # Fallback for any unclassified clusters
+            cluster_map[stats['cluster']] = (f"Cluster {stats['cluster']}", stats['size'], "#9467bd")
+    
+    # Apply mapping
+    df_cluster['cluster_name'] = df_cluster['cluster'].map(lambda x: cluster_map[x][0])
+    df_cluster['color'] = df_cluster['cluster'].map(lambda x: cluster_map[x][2])
+    
+    # Get counts
+    cluster_counts = df_cluster['cluster_name'].value_counts()
+    
     st.subheader("Cluster Distribution")
-    col1, col2, col3 = st.columns(3)
-    colors = ['#1f77b4', '#ff7f0e', '#2ca02c']
+    cols = st.columns(3)
     
-    with col1:
-        st.metric(
-            "Cluster 0: The Cautious / Uninformed", 
-            f"{cluster_counts[0]} employees",
-            help="Characterized by uncertainty with frequent 'Don't know' answers"
-        )
-        st.markdown("""
-        - High uncertainty in benefits
-        - Limited awareness of care options
-        - Frequent "Don't know" responses
-        """)
-        st.progress(0.45, text="Resource Awareness")
+    # Display each cluster
+    for i, (name, count) in enumerate(cluster_counts.items()):
+        color = [v[2] for k, v in cluster_map.items() if v[0] == name][0]
         
-    with col2:
-        st.metric(
-            "Cluster 1: The Supported", 
-            f"{cluster_counts[1]} employees",
-            help="Employees with positive workplace support"
-        )
-        st.markdown("""
-        - Strong awareness of benefits
-        - Active wellness programs
-        - Comfortable discussing with supervisors
-        """)
-        st.progress(0.85, text="Resource Utilization")
-        
-    with col3:
-        st.metric(
-            "Cluster 2: The Stigmatized", 
-            f"{cluster_counts[2]} employees",
-            help="Employees fearing negative repercussions"
-        )
-        st.markdown("""
-        - Fear of negative consequences
-        - Uncomfortable with coworkers
-        - Concerns about anonymity
-        """)
-        st.progress(0.25, text="Psychological Safety")
+        with cols[i]:
+            if "Cautious" in name:
+                st.metric(f"Cluster: {name}", f"{count} employees", 
+                         help="Employees with high uncertainty about mental health resources")
+                st.markdown("""
+                - Frequent "Don't know" responses
+                - Low awareness of benefits
+                - Limited knowledge of care options
+                """)
+                st.progress(0.35, text="Resource Awareness")
+                
+            elif "Supported" in name:
+                st.metric(f"Cluster: {name}", f"{count} employees", 
+                         help="Employees with positive workplace support")
+                st.markdown("""
+                - High benefit awareness
+                - Active wellness programs
+                - Comfortable with supervisors
+                """)
+                st.progress(0.85, text="Support Satisfaction")
+                
+            elif "Stigmatized" in name:
+                st.metric(f"Cluster: {name}", f"{count} employees", 
+                         help="Employees fearing negative consequences")
+                st.markdown("""
+                - Fear of negative repercussions
+                - Uncomfortable with coworkers
+                - Concerns about job security
+                """)
+                st.progress(0.25, text="Psychological Safety")
     
     st.subheader("Cluster Characteristics Comparison")
     
-    # Compare cluster characteristics
-    cluster_chars = df_cluster.groupby('cluster_name').agg({
-        'benefits': lambda x: (x == 'Yes').mean(),
-        'care_options': lambda x: (x == 'Yes').mean(),
-        'wellness_program': lambda x: (x == 'Yes').mean(),
-        'seek_help': lambda x: (x == 'Yes').mean(),
-        'anonymity': lambda x: (x == 'Yes').mean(),
-        'coworkers': lambda x: (x == 'Yes').mean(),
-        'supervisor': lambda x: (x == 'Yes').mean(),
-        'mental_health_consequence': lambda x: (x == 'Yes').mean()
-    }).reset_index()
+    # Prepare data for visualization
+    plot_data = []
+    for name, group in df_cluster.groupby('cluster_name'):
+        for col in ['benefits', 'care_options', 'wellness_program', 
+                   'supervisor', 'coworkers', 'mental_health_consequence']:
+            yes_pct = (group[col] == 'Yes').mean()
+            dk_pct = (group[col] == "Don't know").mean()
+            
+            plot_data.append({
+                'Cluster': name,
+                'Feature': f'{col} (Yes)',
+                'Percentage': yes_pct
+            })
+            
+            plot_data.append({
+                'Cluster': name,
+                'Feature': f'{col} (Don\'t know)',
+                'Percentage': dk_pct
+            })
+            
+    plot_df = pd.DataFrame(plot_data)
     
-    melted = cluster_chars.melt(id_vars='cluster_name', var_name='feature', value_name='percentage')
-    
-    fig = px.bar(melted, x='feature', y='percentage', color='cluster_name', 
-                barmode='group', title='<b>Mental Health Resource Awareness by Segment</b>',
-                labels={'feature': 'Resource Feature', 'percentage': 'Percentage Responded "Yes"'},
-                color_discrete_sequence=colors)
+    # Create visualization
+    fig = px.bar(plot_df, x='Feature', y='Percentage', color='Cluster',
+                 barmode='group', title='<b>Mental Health Attitudes by Segment</b>',
+                 color_discrete_map={
+                     "The Cautious / Uninformed": "#1f77b4",
+                     "The Supported": "#2ca02c",
+                     "The Stigmatized": "#ff7f0e"
+                 })
     fig.update_layout(
         xaxis_tickangle=-45,
-        legend_title_text='Employee Segment'
+        legend_title_text='Employee Segment',
+        yaxis_tickformat=',.0%'
     )
     st.plotly_chart(fig, use_container_width=True)
     
